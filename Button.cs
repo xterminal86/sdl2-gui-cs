@@ -73,6 +73,10 @@ public class Button : ItemGUI
   {
     bool res = base.HandleMouse(evt);
 
+    // Little bit of visual adjustment for "classic" behaviour:
+    // if you hold mouse down on the button and move the mouse outside,
+    // the button will "unpress", but the click will be registered only
+    // if mouse up has been finished on the same button.
     if (_buttonHold && _mouseLockedFlag)
     {
       if (!_cursorInside)

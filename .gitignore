@@ -11,3 +11,5 @@
 /Assets/UnityVS.meta
 /UnityVS.*
 /obj
+bin/
+.vs/

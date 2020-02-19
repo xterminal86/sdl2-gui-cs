@@ -12,6 +12,19 @@ public class Image
 
   IntPtr _renderer;
 
+  public enum Slice9Part
+  {
+    UPPER_LEFT = 0,
+    UPPER_MIDDLE,
+    UPPER_RIGHT,
+    MIDDLE_LEFT,
+    MIDDLE,
+    MIDDLE_RIGHT,
+    LOWER_LEFT,
+    LOWER_MIDDLE,
+    LOWER_RIGHT
+  };
+
   public Image(IntPtr renderer, string fileName, SDL.SDL_RendererFlip flipFlag = SDL.SDL_RendererFlip.SDL_FLIP_NONE)
   {
     _renderer = renderer;
@@ -45,7 +58,10 @@ public class Image
     _slices.Add(slice);
   }
 
+  // Part of the image that should remain unchanged when scaled,
+  // upper left to down right in pixel coordinates (just like in Unity3D)
   SDL.SDL_Rect _sliceParams;
+
   public void Slice(SDL.SDL_Rect sliceParams)
   {
     _sliceParams = sliceParams;
@@ -77,8 +93,10 @@ public class Image
     */
   }
 
-  public void DrawSlice(int sliceIndex, int x, int y, int w, int h)
+  public void DrawSlice(Slice9Part part, int x, int y, int w, int h)
   {
+    int sliceIndex = (int)part;
+
     SDL.SDL_Rect src;
     src.x = _slices[sliceIndex].x;
     src.y = _slices[sliceIndex].y;
@@ -104,7 +122,7 @@ public class Image
       for (int j = 0; j < 3; j++)
       {
         //DrawSlice(sliceInd, x + (Params.w / 3 + spacing) * j, y + (Params.h / 3 + spacing) * i, 32, 32);
-        DrawSlice(sliceInd, x + (size + spacing) * j, y + (size + spacing) * i, size, size);
+        DrawSlice((Slice9Part)sliceInd, x + (size + spacing) * j, y + (size + spacing) * i, size, size);
         sliceInd++;
       }
     }
@@ -119,25 +137,21 @@ public class Image
     else
     {
       // Central part
-      DrawSlice(4,
-                 x + _slices[0].w,
-                 y + _slices[0].h,
-                 w - (_slices[0].w + _slices[2].w),
-                 h - (_slices[0].h + _slices[2].h));
+      DrawSlice(Slice9Part.MIDDLE, x + _slices[0].w, y + _slices[0].h, w - (_slices[0].w + _slices[2].w), h - (_slices[0].h + _slices[2].h));
 
       // Upper and lower middle parts
-      DrawSlice(1, x + _slices[0].w, y, w - (_slices[0].w + _slices[2].w), _slices[1].h);
-      DrawSlice(7, x + _slices[6].w, y + h - _slices[7].h, w - (_slices[0].w + _slices[2].w), _slices[7].h);
+      DrawSlice(Slice9Part.UPPER_MIDDLE, x + _slices[0].w, y, w - (_slices[0].w + _slices[2].w), _slices[1].h);
+      DrawSlice(Slice9Part.LOWER_MIDDLE, x + _slices[6].w, y + h - _slices[7].h, w - (_slices[0].w + _slices[2].w), _slices[7].h);
 
       // Left and right middle parts
-      DrawSlice(3, x, y + _slices[0].h, _slices[3].w, h - (_slices[0].h + _slices[6].h));
-      DrawSlice(5, x + w - _slices[5].w, y + _slices[2].h, _slices[5].w, h - (_slices[2].h + _slices[8].h));
+      DrawSlice(Slice9Part.MIDDLE_LEFT, x, y + _slices[0].h, _slices[3].w, h - (_slices[0].h + _slices[6].h));
+      DrawSlice(Slice9Part.MIDDLE_RIGHT, x + w - _slices[5].w, y + _slices[2].h, _slices[5].w, h - (_slices[2].h + _slices[8].h));
 
       // Lastly, corners
-      DrawSlice(0, x, y, _slices[0].w, _slices[0].h);
-      DrawSlice(2, x + w - _slices[2].w, y, _slices[2].w, _slices[2].h);
-      DrawSlice(6, x, y + h - _slices[6].h, _slices[6].w, _slices[6].h);
-      DrawSlice(8, x + w - _slices[8].w, y + h - _slices[8].h, _slices[8].w, _slices[8].h);
+      DrawSlice(Slice9Part.UPPER_LEFT, x, y, _slices[0].w, _slices[0].h);
+      DrawSlice(Slice9Part.UPPER_RIGHT, x + w - _slices[2].w, y, _slices[2].w, _slices[2].h);
+      DrawSlice(Slice9Part.LOWER_LEFT, x, y + h - _slices[6].h, _slices[6].w, _slices[6].h);
+      DrawSlice(Slice9Part.LOWER_RIGHT, x + w - _slices[8].w, y + h - _slices[8].h, _slices[8].w, _slices[8].h);
 
       // FIXME: debug
       //DrawSlices(400, 0, 64, 5);
